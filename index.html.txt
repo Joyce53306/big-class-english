@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大班口說練習</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #e3f2fd; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        select { font-size: 16px; padding: 8px; width: 100%; margin: 10px 0; border-radius: 10px; }
+        #text-to-say { font-size: 22px; color: #1565c0; font-weight: bold; margin: 20px 0; }
+        #mic-btn { background: #42a5f5; color: white; border: none; width: 80px; height: 80px; border-radius: 50%; font-size: 30px; cursor: pointer; }
+        #result-msg { margin-top: 20px; font-weight: bold; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎓 大班口說練習</h1>
+        <select id="l-select" onchange="updateL()"></select>
+        <select id="s-select" onchange="updateS()"></select>
+        <div id="text-to-say">載入中...</div>
+        <button id="mic-btn">🎤</button>
+        <p id="result-msg">點擊麥克風開始說話</p>
+    </div>
+
+    <script>
+        const data = {
+            "L1: 職業": ["I want to be a chef.", "I want to be a doctor.", "I want to be a pilot.", "I want to be an engineer."],
+            "L2: 運動": ["I tried to kick the ball.", "I can’t kick the ball.", "I tried to catch the ball."],
+            "L3: 好習慣": ["Soap is better.", "Toothpaste is better.", "Water is better."],
+            "L4: 禮貌": ["May I please have some soup?", "Yes, please.", "May I please have some rice?"],
+            "L5: 天氣": ["It’s sunny.", "It’s rainy.", "It’s snowy.", "It’s stormy."],
+            "L6: 動物": ["I see a monkey eating bananas.", "I see a hippo swimming."],
+            "L7: 美勞": ["I cut with scissors.", "I draw with crayons.", "I paint with a brush."],
+            "L8: 節慶": ["On Halloween we say Trick or Treat!", "On Christmas we decorate the tree."],
+            "L9: 購物": ["I will buy a popsicle.", "I will buy shoes.", "I will buy a hat."],
+            "L10: 想像": ["If I had a garden, I would grow lollipops.", "A silly puppy would make me laugh."]
+        };
+
+        const lS = document.getElementById('l-select');
+        const sS = document.getElementById('s-select');
+        const disp = document.getElementById('text-to-say');
+        const msg = document.getElementById('result-msg');
+
+        // 初始化選單
+        for (let l in data) { lS.options.add(new Option(l, l)); }
+        function updateL() {
+            sS.innerHTML = "";
+            data[lS.value].forEach(s => sS.options.add(new Option(s, s)));
+            updateS();
+        }
+        function updateS() { disp.innerText = sS.value; msg.innerText = "點擊麥克風開始"; }
+        updateL();
+
+        // 語音辨識核心 (不需要 Python)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            msg.innerText = "您的瀏覽器不支援語音辨識";
+        } else {
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            document.getElementById('mic-btn').onclick = () => { rec.start(); msg.innerText = "正在聽..."; };
+            rec.onresult = (e) => {
+                const heard = e.results[0][0].transcript.toLowerCase().replace(/[.!]/g, "");
+                const target = disp.innerText.toLowerCase().replace(/[.!]/g, "");
+                if (heard.includes(target.split(" ").pop())) {
+                    msg.innerText = "🌟 太棒了！你說的是：" + heard;
+                } else {
+                    msg.innerText = "再試一次！你說的是：" + heard;
+                }
+            };
+        }
+    </script>
+</body>
+</html>
