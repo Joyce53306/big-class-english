@@ -7,25 +7,21 @@
     <title>大班口說練習</title>
     <style>
         body { font-family: sans-serif; text-align: center; background-color: #FFF9E3; padding: 20px; }
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        select { font-size: 16px; padding: 8px; width: 100%; margin: 10px 0; border-radius: 10px; }
-        .sentence-box { font-size: 22px; color: #333; font-weight: bold; margin: 30px 0; padding: 15px; background: #F0F0F0; border-radius: 10px; }
-        .btn-group { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        .btn { border: none; width: 65px; height: 65px; border-radius: 50%; font-size: 24px; cursor: pointer; color: white; transition: 0.3s; }
-        
-        /* 黃色：聽老師唸 */
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        select { font-size: 16px; padding: 10px; width: 100%; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; }
+        .sentence-box { font-size: 20px; color: #333; font-weight: bold; margin: 25px 0; padding: 20px; background: #F9F9F9; border-left: 5px solid #FFD700; border-radius: 5px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
+        .btn { border: none; width: 70px; height: 70px; border-radius: 50%; font-size: 28px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn:active { transform: scale(0.9); }
         #play-example { background: #FFD700; color: #444; } 
-        /* 藍色：錄音 */
         #record-btn { background: #42A5F5; }
-        /* 紅色：聽自己唸 (預設隱藏，錄完才出現) */
         #play-mine { background: #FF5252; display: none; } 
-
-        #status { margin-top: 20px; font-weight: bold; color: #2E86C1; min-height: 40px; }
+        #status { margin-top: 25px; font-weight: bold; color: #555; font-size: 18px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>🎓 大班口說挑戰 (L1-L10)</h1>
+        <h2 style="color: #E67E22;">🎓 大班口說挑戰 (L1-L10)</h2>
         <select id="lesson-select" onchange="initLesson()"></select>
         <select id="sentence-select" onchange="showSentence()"></select>
         
@@ -33,8 +29,8 @@
 
         <div class="btn-group">
             <button id="play-example" class="btn" title="聽範例">🔊</button>
-            <button id="record-btn" class="btn" title="開始錄音">🎤</button>
-            <button id="play-mine" class="btn" title="聽自己唸">👂</button>
+            <button id="record-btn" class="btn" title="錄音">🎤</button>
+            <button id="play-mine" class="btn" title="聽自己">👂</button>
         </div>
         
         <p id="status">點擊黃色喇叭聽老師唸</p>
@@ -42,14 +38,21 @@
 
     <script>
         const curriculum = {
-            "L1: 職業": ["I want to be a chef.", "I want to be a doctor.", "I want to be a teacher."],
-            "L2: 運動": ["I tried to kick the ball.", "I can’t kick the ball.", "I tried to catch the ball."],
-            "L10: 想像花園": ["If I had a garden, I would grow lollipops.", "A silly puppy would make me laugh."]
+            "Lesson 1: Jobs": ["I want to be a chef.", "I want to be a doctor.", "I want to be a teacher.", "I want to be a pilot.", "I want to be an engineer.", "I want to be a ballerina.", "I want to be a nurse.", "I want to be a firefighter."],
+            "Lesson 2: Sports": ["I tried to kick the ball. I can’t kick the ball.", "I tried to catch the ball. I can’t catch the ball.", "I tried to spike the ball. I can’t spike the ball.", "I tried to throw the ball. I can’t throw the ball."],
+            "Lesson 3: Which is better?": ["Toothpaste is better.", "Soap is better.", "Broccoli is better.", "Water is better.", "A brush is better."],
+            "Lesson 4: Politeness": ["May I please have some soup? Yes, please.", "May I please have some rice? Yes, please."],
+            "Lesson 5: Weather": ["It’s sunny.", "It’s rainy.", "It’s snowy.", "It’s cloudy.", "It’s windy.", "It’s stormy.", "It’s partly cloudy."],
+            "Lesson 6: Animals": ["Look! I see a monkey eating bananas.", "Look! I see a giraffe dancing with a sandwich.", "Look! I see a kangaroo hopping with peanuts.", "Look! I see a hippo swimming.", "Look! I see an elephant throwing popcorn."],
+            "Lesson 7: Art Class": ["I cut with scissors.", "I color with markers.", "I draw with crayons.", "I paste with glue.", "I paint with a brush."],
+            "Lesson 8: Festivals": ["On Chinese New Year we will watch the lion and dragon dance.", "On Easter we will hide eggs and dress like rabbits.", "On Thanksgiving we will eat a huge turkey and bake pies.", "On Valentine’s Day we will give each other flowers and chocolate.", "On Halloween we will dress up in costumes and say Trick or Treat!", "On Christmas we will decorate Christmas tree and give each other gifts."],
+            "Lesson 9: Shopping": ["I will buy a popsicle.", "I will buy a bag.", "I will buy shoes.", "I will buy a hat."],
+            "Lesson 10: My Garden": ["If I had a garden, I would grow rainbow lollipops.", "Rainbow lollipops would make me colorful.", "If I had a garden, I would grow dancing flowers.", "Dancing flowers would make me dance.", "If I had a garden, I would grow chocolate turtles.", "Chocolate turtles would make me exercise.", "I had a garden I would grow a silly puppy.", "A silly puppy would make me laugh."]
         };
 
         const lS = document.getElementById('lesson-select');
         const sS = document.getElementById('sentence-select');
-        const disp = document.getElementById('display-text');
+        const disp = document.getElementById('text-to-say');
         const status = document.getElementById('status');
         let mediaRecorder;
         let audioChunks = [];
@@ -63,22 +66,22 @@
             showSentence();
         }
         function showSentence() { 
-            disp.innerText = sS.value; 
-            status.innerText = "請聽範例";
-            document.getElementById('play-mine').style.display = 'none'; // 切換句子時隱藏重播鍵
+            document.getElementById('display-text').innerText = sS.value; 
+            status.innerText = "先聽範例再唸唸看";
+            document.getElementById('play-mine').style.display = 'none';
         }
         initLesson();
 
-        // 1. 聽範例 (老師唸)
+        // 1. 播放範例
         document.getElementById('play-example').onclick = () => {
-            const utter = new SpeechSynthesisUtterance(disp.innerText);
+            const utter = new SpeechSynthesisUtterance(document.getElementById('display-text').innerText);
             utter.lang = 'en-US';
-            utter.rate = 0.8;
+            utter.rate = 0.75; // 大班句子較長，語速調慢至 0.75
             window.speechSynthesis.speak(utter);
-            status.innerText = "聽完後，換你點麥克風唸唸看！";
+            status.innerText = "聽完範例了，現在換你唸！";
         };
 
-        // 2. 錄音功能
+        // 2. 錄音
         document.getElementById('record-btn').onclick = async function() {
             if (!mediaRecorder || mediaRecorder.state === 'inactive') {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -89,18 +92,18 @@
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     audioUrl = URL.createObjectURL(audioBlob);
                     document.getElementById('play-mine').style.display = 'inline-block';
-                    status.innerText = "錄音結束！點擊紅色耳朵聽聽看自己的聲音。";
+                    status.innerText = "錄音完成！點紅耳朵聽看看";
                 };
                 mediaRecorder.start();
-                this.style.transform = "scale(1.2)";
-                status.innerText = "正在錄音中...說完再點一次麥克風";
+                this.style.backgroundColor = "#FF5722";
+                status.innerText = "正在聽你說話... (說完再點一次)";
             } else {
                 mediaRecorder.stop();
-                this.style.transform = "scale(1)";
+                this.style.backgroundColor = "#42A5F5";
             }
         };
 
-        // 3. 聽自己唸 (回放)
+        // 3. 聽自己
         document.getElementById('play-mine').onclick = () => {
             if (audioUrl) {
                 const audio = new Audio(audioUrl);
