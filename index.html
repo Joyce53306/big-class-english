@@ -6,71 +6,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大班口說練習</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #e3f2fd; padding: 20px; }
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        body { font-family: sans-serif; text-align: center; background-color: #FFF9E3; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         select { font-size: 16px; padding: 8px; width: 100%; margin: 10px 0; border-radius: 10px; }
-        #text-to-say { font-size: 22px; color: #1565c0; font-weight: bold; margin: 20px 0; }
-        #mic-btn { background: #42a5f5; color: white; border: none; width: 80px; height: 80px; border-radius: 50%; font-size: 30px; cursor: pointer; }
-        #result-msg { margin-top: 20px; font-weight: bold; color: #2e7d32; }
+        .sentence-box { font-size: 22px; color: #333; font-weight: bold; margin: 30px 0; padding: 15px; background: #F0F0F0; border-radius: 10px; }
+        .btn-group { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { border: none; width: 65px; height: 65px; border-radius: 50%; font-size: 24px; cursor: pointer; color: white; transition: 0.3s; }
+        
+        /* 黃色：聽老師唸 */
+        #play-example { background: #FFD700; color: #444; } 
+        /* 藍色：錄音 */
+        #record-btn { background: #42A5F5; }
+        /* 紅色：聽自己唸 (預設隱藏，錄完才出現) */
+        #play-mine { background: #FF5252; display: none; } 
+
+        #status { margin-top: 20px; font-weight: bold; color: #2E86C1; min-height: 40px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>🎓 大班口說練習</h1>
-        <select id="l-select" onchange="updateL()"></select>
-        <select id="s-select" onchange="updateS()"></select>
-        <div id="text-to-say">載入中...</div>
-        <button id="mic-btn">🎤</button>
-        <p id="result-msg">點擊麥克風開始說話</p>
+        <h1>🎓 大班口說挑戰 (L1-L10)</h1>
+        <select id="lesson-select" onchange="initLesson()"></select>
+        <select id="sentence-select" onchange="showSentence()"></select>
+        
+        <div class="sentence-box" id="display-text">載入中...</div>
+
+        <div class="btn-group">
+            <button id="play-example" class="btn" title="聽範例">🔊</button>
+            <button id="record-btn" class="btn" title="開始錄音">🎤</button>
+            <button id="play-mine" class="btn" title="聽自己唸">👂</button>
+        </div>
+        
+        <p id="status">點擊黃色喇叭聽老師唸</p>
     </div>
 
     <script>
-        const data = {
-            "L1: 職業": ["I want to be a chef.", "I want to be a doctor.", "I want to be a pilot.", "I want to be an engineer."],
+        const curriculum = {
+            "L1: 職業": ["I want to be a chef.", "I want to be a doctor.", "I want to be a teacher."],
             "L2: 運動": ["I tried to kick the ball.", "I can’t kick the ball.", "I tried to catch the ball."],
-            "L3: 好習慣": ["Soap is better.", "Toothpaste is better.", "Water is better."],
-            "L4: 禮貌": ["May I please have some soup?", "Yes, please.", "May I please have some rice?"],
-            "L5: 天氣": ["It’s sunny.", "It’s rainy.", "It’s snowy.", "It’s stormy."],
-            "L6: 動物": ["I see a monkey eating bananas.", "I see a hippo swimming."],
-            "L7: 美勞": ["I cut with scissors.", "I draw with crayons.", "I paint with a brush."],
-            "L8: 節慶": ["On Halloween we say Trick or Treat!", "On Christmas we decorate the tree."],
-            "L9: 購物": ["I will buy a popsicle.", "I will buy shoes.", "I will buy a hat."],
-            "L10: 想像": ["If I had a garden, I would grow lollipops.", "A silly puppy would make me laugh."]
+            "L10: 想像花園": ["If I had a garden, I would grow lollipops.", "A silly puppy would make me laugh."]
         };
 
-        const lS = document.getElementById('l-select');
-        const sS = document.getElementById('s-select');
-        const disp = document.getElementById('text-to-say');
-        const msg = document.getElementById('result-msg');
+        const lS = document.getElementById('lesson-select');
+        const sS = document.getElementById('sentence-select');
+        const disp = document.getElementById('display-text');
+        const status = document.getElementById('status');
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioUrl;
 
         // 初始化選單
-        for (let l in data) { lS.options.add(new Option(l, l)); }
-        function updateL() {
+        for (let l in curriculum) { lS.options.add(new Option(l, l)); }
+        function initLesson() {
             sS.innerHTML = "";
-            data[lS.value].forEach(s => sS.options.add(new Option(s, s)));
-            updateS();
+            curriculum[lS.value].forEach(s => sS.options.add(new Option(s, s)));
+            showSentence();
         }
-        function updateS() { disp.innerText = sS.value; msg.innerText = "點擊麥克風開始"; }
-        updateL();
+        function showSentence() { 
+            disp.innerText = sS.value; 
+            status.innerText = "請聽範例";
+            document.getElementById('play-mine').style.display = 'none'; // 切換句子時隱藏重播鍵
+        }
+        initLesson();
 
-        // 語音辨識核心 (不需要 Python)
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            msg.innerText = "您的瀏覽器不支援語音辨識";
-        } else {
-            const rec = new SpeechRecognition();
-            rec.lang = 'en-US';
-            document.getElementById('mic-btn').onclick = () => { rec.start(); msg.innerText = "正在聽..."; };
-            rec.onresult = (e) => {
-                const heard = e.results[0][0].transcript.toLowerCase().replace(/[.!]/g, "");
-                const target = disp.innerText.toLowerCase().replace(/[.!]/g, "");
-                if (heard.includes(target.split(" ").pop())) {
-                    msg.innerText = "🌟 太棒了！你說的是：" + heard;
-                } else {
-                    msg.innerText = "再試一次！你說的是：" + heard;
-                }
-            };
-        }
+        // 1. 聽範例 (老師唸)
+        document.getElementById('play-example').onclick = () => {
+            const utter = new SpeechSynthesisUtterance(disp.innerText);
+            utter.lang = 'en-US';
+            utter.rate = 0.8;
+            window.speechSynthesis.speak(utter);
+            status.innerText = "聽完後，換你點麥克風唸唸看！";
+        };
+
+        // 2. 錄音功能
+        document.getElementById('record-btn').onclick = async function() {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioUrl = URL.createObjectURL(audioBlob);
+                    document.getElementById('play-mine').style.display = 'inline-block';
+                    status.innerText = "錄音結束！點擊紅色耳朵聽聽看自己的聲音。";
+                };
+                mediaRecorder.start();
+                this.style.transform = "scale(1.2)";
+                status.innerText = "正在錄音中...說完再點一次麥克風";
+            } else {
+                mediaRecorder.stop();
+                this.style.transform = "scale(1)";
+            }
+        };
+
+        // 3. 聽自己唸 (回放)
+        document.getElementById('play-mine').onclick = () => {
+            if (audioUrl) {
+                const audio = new Audio(audioUrl);
+                audio.play();
+                status.innerText = "正在播放你的聲音...";
+            }
+        };
     </script>
 </body>
 </html>
