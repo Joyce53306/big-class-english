@@ -1,116 +1,353 @@
+HTML
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <link rel="manifest" href="manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大班口說練習</title>
+    <title>大班英語口說挑戰</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #FFF9E3; padding: 20px; }
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        select { font-size: 16px; padding: 10px; width: 100%; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; }
-        .sentence-box { font-size: 20px; color: #333; font-weight: bold; margin: 25px 0; padding: 20px; background: #F9F9F9; border-left: 5px solid #FFD700; border-radius: 5px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
-        .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
-        .btn { border: none; width: 70px; height: 70px; border-radius: 50%; font-size: 28px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn:active { transform: scale(0.9); }
-        #play-example { background: #FFD700; color: #444; } 
-        #record-btn { background: #42A5F5; }
-        #play-mine { background: #FF5252; display: none; } 
-        #status { margin-top: 25px; font-weight: bold; color: #555; font-size: 18px; }
+        /* 整體網頁背景仿照中班的淺灰綠色調 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #edf1f2; 
+            margin: 0; 
+            padding: 10px 0 30px 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        /* 頂部標題區塊 */
+        .header {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 24px;
+            padding: 15px 0;
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .header h1 {
+            font-size: 22px;
+            color: #ff4081;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+        }
+
+        /* 水平滾動導覽列 (L1-L10 分頁) */
+        .navbar {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 95%;
+            padding: 5px 10px;
+            gap: 10px;
+            scrollbar-width: none; 
+        }
+        .navbar::-webkit-scrollbar {
+            display: none; 
+        }
+        .nav-btn {
+            background-color: #f0f0f0;
+            color: #666;
+            border: none;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .nav-btn.active {
+            background-color: #26a69a; 
+            color: white;
+        }
+
+        /* 句子卡片顯示區 */
+        .content-area {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        /* 獨立句子白卡片 */
+        .sentence-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .sentence-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            word-break: break-word;
+        }
+
+        /* 按鈕群組 */
+        .btn-group {
+            display: flex;
+            gap: 25px;
+        }
+        .circle-btn {
+            border: none;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            font-size: 26px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease;
+        }
+        .circle-btn:active {
+            transform: scale(0.92);
+        }
+        
+        /* 黃色喇叭：聽老師唸 */
+        .btn-speak {
+            background-color: #ffe082;
+            color: #444;
+        }
+        /* 紅色麥克風：錄音與回放切換 */
+        .btn-mic {
+            background-color: #ff7043;
+            color: white;
+        }
+        .btn-mic.recording {
+            background-color: #d32f2f;
+            animation: pulse 1.2s infinite;
+        }
+        .btn-mic.has-audio {
+            background-color: #4db6ac; 
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="color: #E67E22;">🎓 大班口說挑戰 (L1-L10)</h2>
-        <select id="lesson-select" onchange="initLesson()"></select>
-        <select id="sentence-select" onchange="showSentence()"></select>
-        
-        <div class="sentence-box" id="display-text">載入中...</div>
 
-        <div class="btn-group">
-            <button id="play-example" class="btn" title="聽範例">🔊</button>
-            <button id="record-btn" class="btn" title="錄音">🎤</button>
-            <button id="play-mine" class="btn" title="聽自己">👂</button>
-        </div>
-        
-        <p id="status">點擊黃色喇叭聽老師唸</p>
+    <div class="header">
+        <h1>🌟 大班英語口說挑戰</h1>
+        <div class="navbar" id="navbar"></div>
     </div>
 
+    <div class="content-area" id="content-area"></div>
+
     <script>
+        // 大班完整 10 課教材資料庫
         const curriculum = {
-            "Lesson 1: Jobs": ["I want to be a chef.", "I want to be a doctor.", "I want to be a teacher.", "I want to be a pilot.", "I want to be an engineer.", "I want to be a ballerina.", "I want to be a nurse.", "I want to be a firefighter."],
-            "Lesson 2: Sports": ["I tried to kick the ball. I can’t kick the ball.", "I tried to catch the ball. I can’t catch the ball.", "I tried to spike the ball. I can’t spike the ball.", "I tried to throw the ball. I can’t throw the ball."],
-            "Lesson 3: Which is better?": ["Toothpaste is better.", "Soap is better.", "Broccoli is better.", "Water is better.", "A brush is better."],
-            "Lesson 4: Politeness": ["May I please have some soup? Yes, please.", "May I please have some rice? Yes, please."],
-            "Lesson 5: Weather": ["It’s sunny.", "It’s rainy.", "It’s snowy.", "It’s cloudy.", "It’s windy.", "It’s stormy.", "It’s partly cloudy."],
-            "Lesson 6: Animals": ["Look! I see a monkey eating bananas.", "Look! I see a giraffe dancing with a sandwich.", "Look! I see a kangaroo hopping with peanuts.", "Look! I see a hippo swimming.", "Look! I see an elephant throwing popcorn."],
-            "Lesson 7: Art Class": ["I cut with scissors.", "I color with markers.", "I draw with crayons.", "I paste with glue.", "I paint with a brush."],
-            "Lesson 8: Festivals": ["On Chinese New Year we will watch the lion and dragon dance.", "On Easter we will hide eggs and dress like rabbits.", "On Thanksgiving we will eat a huge turkey and bake pies.", "On Valentine’s Day we will give each other flowers and chocolate.", "On Halloween we will dress up in costumes and say Trick or Treat!", "On Christmas we will decorate Christmas tree and give each other gifts."],
-            "Lesson 9: Shopping": ["I will buy a popsicle.", "I will buy a bag.", "I will buy shoes.", "I will buy a hat."],
-            "Lesson 10: My Garden": ["If I had a garden, I would grow rainbow lollipops.", "Rainbow lollipops would make me colorful.", "If I had a garden, I would grow dancing flowers.", "Dancing flowers would make me dance.", "If I had a garden, I would grow chocolate turtles.", "Chocolate turtles would make me exercise.", "I had a garden I would grow a silly puppy.", "A silly puppy would make me laugh."]
+            "L1 職業": [
+                "What do you want to be?", "I want to be a chef.", "I want to be a doctor.", 
+                "I want to be a teacher.", "I want to be a pilot.", "I want to be an engineer.", 
+                "I want to be a ballerina.", "I want to be a nurse.", "I want to be a firefighter."
+            ],
+            "L2 運動": [
+                "I tried to kick the ball. I can’t kick the ball.", 
+                "I tried to catch the ball. I can’t catch the ball.", 
+                "I tried to spike the ball. I can’t spike the ball.", 
+                "I tried to throw the ball. I can’t throw the ball."
+            ],
+            "L3 哪一個好": [
+                "Should I brush my teeth with chocolate or toothpaste? Which one is better?", "Toothpaste is better.", 
+                "Should I wash my hands with mud or soap? Which one is better?", "Soap is better.", 
+                "Should I eat worms or broccoli? Which one is better?", "Broccoli is better.", 
+                "Should I take a bath with noodles or water? Which one is better?", "Water is better.", 
+                "Should I comb my hair with a fork or a brush? Which one is better?", "A brush is better."
+            ],
+            "L4 禮貌句型": [
+                "May I please have some soup? Yes, please.", 
+                "May I please have some rice? Yes, please."
+            ],
+            "L5 天氣詢問": [
+                "What’s the weather like? It’s sunny.", "What’s the weather like? It’s rainy.", 
+                "What’s the weather like? It’s snowy.", "What’s the weather like? It’s cloudy.", 
+                "What’s the weather like? It’s windy.", "What’s the weather like? It’s stormy.", 
+                "What’s the weather like? It’s partly cloudy."
+            ],
+            "L6 驚喜發現": [
+                "Look! I see a monkey eating bananas.", 
+                "Look! I see a giraffe dancing with a sandwich.", 
+                "Look! I see a kangaroo hopping with peanuts.", 
+                "Look! I see a hippo swimming.", 
+                "Look! I see an elephant throwing popcorn."
+            ],
+            "L7 美勞工具": [
+                "I cut with scissors.", "I color with markers.", 
+                "I draw with crayons.", "I paste with glue.", "I paint with a brush."
+            ],
+            "L8 節慶活動": [
+                "On Chinese New Year we will watch the lion and dragon dance.", 
+                "On Easter we will hide eggs and dress like rabbits.", 
+                "On Thanksgiving we will eat a huge turkey and bake pies.", 
+                "On Valentine’s Day we will give each other flowers and chocolate.", 
+                "On Halloween we will dress up in costumes and say “Trick or Treat!”", 
+                "On Christmas we will decorate Christmas tree and give each other gifts."
+            ],
+            "L9 歡樂購物": [
+                "I will buy a popsicle.", "I will buy a bag.", 
+                "I will buy shoes.", "I will buy a hat."
+            ],
+            "L10 想像花園": [
+                "If I had a garden, I would grow rainbow lollipops.", 
+                "Rainbow lollipops would make me colorful.", 
+                "If I had a garden, I would grow dancing flowers.", 
+                "Dancing flowers would make me dance.", 
+                "If I had a garden, I would grow chocolate turtles.", 
+                "Chocolate turtles would make me exercise.", 
+                "I had a garden I would grow a silly puppy.", 
+                "A silly puppy would make me laugh."
+            ]
         };
 
-        const lS = document.getElementById('lesson-select');
-        const sS = document.getElementById('sentence-select');
-        const disp = document.getElementById('text-to-say');
-        const status = document.getElementById('status');
-        let mediaRecorder;
+        let mediaRecorder = null;
         let audioChunks = [];
-        let audioUrl;
+        let currentRecordingKey = null; 
+        let recordedAudios = {}; 
 
-        // 初始化選單
-        for (let l in curriculum) { lS.options.add(new Option(l, l)); }
-        function initLesson() {
-            sS.innerHTML = "";
-            curriculum[lS.value].forEach(s => sS.options.add(new Option(s, s)));
-            showSentence();
+        // 初始化頂部導覽列
+        const navbar = document.getElementById('navbar');
+        Object.keys(curriculum).forEach((lesson, index) => {
+            const btn = document.createElement('button');
+            btn.className = `nav-btn ${index === 0 ? 'active' : ''}`;
+            btn.innerText = lesson;
+            btn.onclick = () => switchLesson(lesson, btn);
+            navbar.appendChild(btn);
+        });
+
+        // 切換分頁
+        function switchLesson(lessonKey, btnElement) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderCards(lessonKey);
         }
-        function showSentence() { 
-            document.getElementById('display-text').innerText = sS.value; 
-            status.innerText = "先聽範例再唸唸看";
-            document.getElementById('play-mine').style.display = 'none';
-        }
-        initLesson();
 
-        // 1. 播放範例
-        document.getElementById('play-example').onclick = () => {
-            const utter = new SpeechSynthesisUtterance(document.getElementById('display-text').innerText);
-            utter.lang = 'en-US';
-            utter.rate = 0.75; // 大班句子較長，語速調慢至 0.75
-            window.speechSynthesis.speak(utter);
-            status.innerText = "聽完範例了，現在換你唸！";
-        };
-
-        // 2. 錄音
-        document.getElementById('record-btn').onclick = async function() {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById('play-mine').style.display = 'inline-block';
-                    status.innerText = "錄音完成！點紅耳朵聽看看";
-                };
-                mediaRecorder.start();
-                this.style.backgroundColor = "#FF5722";
-                status.innerText = "正在聽你說話... (說完再點一次)";
-            } else {
+        // 渲染課程中的所有句子白卡片
+        function renderCards(lessonKey) {
+            const container = document.getElementById('content-area');
+            container.innerHTML = ''; 
+            
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
-                this.style.backgroundColor = "#42A5F5";
             }
-        };
 
-        // 3. 聽自己
-        document.getElementById('play-mine').onclick = () => {
-            if (audioUrl) {
-                const audio = new Audio(audioUrl);
-                audio.play();
-                status.innerText = "正在播放你的聲音...";
+            curriculum[lessonKey].forEach((sentence, index) => {
+                const uniqueKey = `${lessonKey}_${index}`;
+                const card = document.createElement('div');
+                card.className = 'sentence-card';
+
+                card.innerHTML = `
+                    <div class="sentence-text">${sentence}</div>
+                    <div class="btn-group">
+                        <button class="circle-btn btn-speak" onclick="playTTS('${sentence.replace(/'/g, "\\'")}')">📢</button>
+                        <button class="circle-btn btn-mic" id="mic_${uniqueKey}" onclick="handleMicClick('${uniqueKey}')">🎤</button>
+                    </div>
+                `;
+                container.appendChild(card);
+                
+                if (recordedAudios[uniqueKey]) {
+                    const micBtn = document.getElementById(`mic_${uniqueKey}`);
+                    micBtn.classList.add('has-audio');
+                    micBtn.innerText = '👂';
+                }
+            });
+        }
+
+        // 1. 聽範例 (TTS 老師發音)
+        function playTTS(text) {
+            window.speechSynthesis.cancel(); 
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-US';
+            utter.rate = 0.8; 
+            window.speechSynthesis.speak(utter);
+        }
+
+        // 2. 錄音與重播核心控制
+        async function handleMicClick(key) {
+            const micBtn = document.getElementById(`mic_${key}`);
+
+            // 狀態 A：已經錄好音，點擊播放孩子自己的聲音
+            if (micBtn.classList.contains('has-audio') && currentRecordingKey !== key) {
+                if (recordedAudios[key]) {
+                    const audio = new Audio(recordedAudios[key]);
+                    audio.play();
+                }
+                setTimeout(() => {
+                    if(confirm("想要清除這段聲音，重新錄製一次嗎？")) {
+                        micBtn.classList.remove('has-audio');
+                        micBtn.innerText = '🎤';
+                    }
+                }, 1000);
+                return;
             }
-        };
+
+            // 狀態 B：開始錄音
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: { echoCancellation: true, noiseSuppression: true } 
+                    });
+
+                    let options = {};
+                    if (MediaRecorder.isTypeSupported('audio/webm')) {
+                        options = { mimeType: 'audio/webm' }; 
+                    } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                        options = { mimeType: 'audio/mp4' };  
+                    }
+
+                    mediaRecorder = new MediaRecorder(stream, options);
+                    audioChunks = [];
+                    currentRecordingKey = key;
+
+                    mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                        recordedAudios[key] = URL.createObjectURL(audioBlob);
+                        
+                        micBtn.classList.remove('recording');
+                        micBtn.classList.add('has-audio');
+                        micBtn.innerText = '👂';
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    micBtn.classList.add('recording');
+                    micBtn.innerText = '⏹️'; 
+
+                } catch (err) {
+                    alert('無法開啟麥克風，請檢查手機或瀏覽器的安全權限設定！');
+                    console.error(err);
+                }
+            } 
+            // 狀態 C：正在錄音中，點擊停止
+            else if (mediaRecorder.state === 'recording' && currentRecordingKey === key) {
+                mediaRecorder.stop();
+            }
+        }
+
+        // 預設載入第一課
+        renderCards(Object.keys(curriculum)[0]);
     </script>
 </body>
 </html>
