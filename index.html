@@ -7,86 +7,92 @@ HTML
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大班英語口說挑戰</title>
     <style>
-        /* 整體網頁背景仿照中班的淺灰綠色調 */
+        /* 網頁背景完全複製圖片 327717_2.jpg 的淺灰綠色調 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: #edf1f2; 
             margin: 0; 
-            padding: 10px 0 30px 0; 
+            padding: 10px 0 40px 0; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
         }
 
-        /* 頂部標題區塊 */
+        /* 頂部白色主面板區塊 */
         .header {
             background: white;
             width: 90%;
-            max-width: 600px;
+            max-width: 550px;
             border-radius: 24px;
-            padding: 15px 0;
-            margin: 10px 0;
+            padding: 18px 0;
+            margin: 10px 0 15px 0;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
         .header h1 {
             font-size: 22px;
-            color: #ff4081;
+            color: #ff4081; /* 圖片中的桃紅粉色字體 */
             margin: 0 0 15px 0;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
-        /* 水平滾動導覽列 (L1-L10 分頁) */
+        /* 水平滾動導覽列 (L1-L10 分頁標籤) */
         .navbar {
             display: flex;
             overflow-x: auto;
             white-space: nowrap;
-            width: 95%;
-            padding: 5px 10px;
+            width: 92%;
+            margin: 0 auto;
+            padding: 5px 0;
             gap: 10px;
-            scrollbar-width: none; 
+            scrollbar-width: none; /* 隱藏 Firefox 滾動條 */
         }
         .navbar::-webkit-scrollbar {
-            display: none; 
+            display: none; /* 隱藏 Chrome/Safari 滾動條 */
         }
         .nav-btn {
-            background-color: #f0f0f0;
-            color: #666;
+            background-color: #f5f5f5;
+            color: #757575;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             font-size: 15px;
             font-weight: bold;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            flex-shrink: 0;
         }
+        /* 當前選中的綠色標籤 */
         .nav-btn.active {
             background-color: #26a69a; 
             color: white;
         }
 
-        /* 句子卡片顯示區 */
+        /* 垂直卡片堆疊容器 */
         .content-area {
             width: 90%;
-            max-width: 600px;
-            margin-top: 10px;
+            max-width: 550px;
         }
 
-        /* 獨立句子白卡片 */
+        /* 獨立句子白色圓角卡片 */
         .sentence-card {
             background: white;
             border-radius: 24px;
-            padding: 30px 20px;
+            padding: 35px 24px;
             margin-bottom: 20px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.03);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
         .sentence-text {
-            font-size: 22px;
+            font-size: 23px;
             font-weight: bold;
             color: #2c3e50;
             text-align: center;
@@ -95,7 +101,7 @@ HTML
             word-break: break-word;
         }
 
-        /* 按鈕群組 */
+        /* 按鈕置中對齊 */
         .btn-group {
             display: flex;
             gap: 25px;
@@ -110,49 +116,51 @@ HTML
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.1s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.1s ease, background-color 0.2s ease;
         }
         .circle-btn:active {
             transform: scale(0.92);
         }
         
-        /* 黃色喇叭：聽老師唸 */
+        /* 黃色喇叭按鈕 */
         .btn-speak {
             background-color: #ffe082;
             color: #444;
         }
-        /* 紅色麥克風：錄音與回放切換 */
+        /* 紅色麥克風按鈕 */
         .btn-mic {
             background-color: #ff7043;
             color: white;
         }
+        /* 錄音中閃爍動畫 */
         .btn-mic.recording {
-            background-color: #d32f2f;
+            background-color: #e53935;
             animation: pulse 1.2s infinite;
         }
+        /* 錄好音變成綠藍色耳朵 */
         .btn-mic.has-audio {
             background-color: #4db6ac; 
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(229, 57, 53, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🌟 大班英語口說挑戰</h1>
+        <h1>☀️ 英語口說挑戰</h1>
         <div class="navbar" id="navbar"></div>
     </div>
 
     <div class="content-area" id="content-area"></div>
 
     <script>
-        // 大班完整 10 課教材資料庫
+        // 大班完美修正版 1-10 課資料庫
         const curriculum = {
             "L1 職業": [
                 "What do you want to be?", "I want to be a chef.", "I want to be a doctor.", 
@@ -160,10 +168,10 @@ HTML
                 "I want to be a ballerina.", "I want to be a nurse.", "I want to be a firefighter."
             ],
             "L2 運動": [
-                "I tried to kick the ball. I can’t kick the ball.", 
-                "I tried to catch the ball. I can’t catch the ball.", 
-                "I tried to spike the ball. I can’t spike the ball.", 
-                "I tried to throw the ball. I can’t throw the ball."
+                "I try to kick the ball. I can't kick the ball.", 
+                "I try to catch the ball. I can't catch the ball.", 
+                "I try to spike the ball. I can't spike the ball.", 
+                "I try to throw the ball. I can't throw the ball."
             ],
             "L3 哪一個好": [
                 "Should I brush my teeth with chocolate or toothpaste? Which one is better?", "Toothpaste is better.", 
@@ -174,7 +182,8 @@ HTML
             ],
             "L4 禮貌句型": [
                 "May I please have some soup? Yes, please.", 
-                "May I please have some rice? Yes, please."
+                "May I please have some rice? Yes, please.",
+                "May I please have some milk? Yes, please."
             ],
             "L5 天氣詢問": [
                 "What’s the weather like? It’s sunny.", "What’s the weather like? It’s rainy.", 
@@ -194,12 +203,12 @@ HTML
                 "I draw with crayons.", "I paste with glue.", "I paint with a brush."
             ],
             "L8 節慶活動": [
-                "On Chinese New Year we will watch the lion and dragon dance.", 
-                "On Easter we will hide eggs and dress like rabbits.", 
-                "On Thanksgiving we will eat a huge turkey and bake pies.", 
-                "On Valentine’s Day we will give each other flowers and chocolate.", 
-                "On Halloween we will dress up in costumes and say “Trick or Treat!”", 
-                "On Christmas we will decorate Christmas tree and give each other gifts."
+                "On Chinese New Year, we will watch the lion and dragon dance.", 
+                "On Easter, we will hide eggs and dress like rabbits.", 
+                "On Thanksgiving, we will eat a huge turkey and bake pies.", 
+                "On Valentine’s Day, we will give each other flowers and chocolate.", 
+                "On Halloween, we will dress up in costumes and say “Trick or Treat!”", 
+                "On Christmas, we will decorate the Christmas tree and give each other gifts."
             ],
             "L9 歡樂購物": [
                 "I will buy a popsicle.", "I will buy a bag.", 
@@ -212,7 +221,7 @@ HTML
                 "Dancing flowers would make me dance.", 
                 "If I had a garden, I would grow chocolate turtles.", 
                 "Chocolate turtles would make me exercise.", 
-                "I had a garden I would grow a silly puppy.", 
+                "If I had a garden, I would grow a silly puppy.", 
                 "A silly puppy would make me laugh."
             ]
         };
@@ -222,7 +231,7 @@ HTML
         let currentRecordingKey = null; 
         let recordedAudios = {}; 
 
-        // 初始化頂部導覽列
+        // 生成頂部標籤列
         const navbar = document.getElementById('navbar');
         Object.keys(curriculum).forEach((lesson, index) => {
             const btn = document.createElement('button');
@@ -232,14 +241,13 @@ HTML
             navbar.appendChild(btn);
         });
 
-        // 切換分頁
         function switchLesson(lessonKey, btnElement) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
             renderCards(lessonKey);
         }
 
-        // 渲染課程中的所有句子白卡片
+        // 渲染個別句子的卡片
         function renderCards(lessonKey) {
             const container = document.getElementById('content-area');
             container.innerHTML = ''; 
@@ -253,13 +261,20 @@ HTML
                 const card = document.createElement('div');
                 card.className = 'sentence-card';
 
+                // 透過安全機制動態綁定事件，避免英文單引號或雙引號斷開 HTML 代碼
                 card.innerHTML = `
                     <div class="sentence-text">${sentence}</div>
                     <div class="btn-group">
-                        <button class="circle-btn btn-speak" onclick="playTTS('${sentence.replace(/'/g, "\\'")}')">📢</button>
-                        <button class="circle-btn btn-mic" id="mic_${uniqueKey}" onclick="handleMicClick('${uniqueKey}')">🎤</button>
+                        <button class="circle-btn btn-speak">🔊</button>
+                        <button class="circle-btn btn-mic" id="mic_${uniqueKey}">🎤</button>
                     </div>
                 `;
+                
+                // 綁定聽發音
+                card.querySelector('.btn-speak').onclick = () => playTTS(sentence);
+                // 綁定開關麥克風
+                card.querySelector('.btn-mic').onclick = () => handleMicClick(uniqueKey);
+                
                 container.appendChild(card);
                 
                 if (recordedAudios[uniqueKey]) {
@@ -270,41 +285,43 @@ HTML
             });
         }
 
-        // 1. 聽範例 (TTS 老師發音)
+        // 1. 聽範例 (Web Speech API)
         function playTTS(text) {
             window.speechSynthesis.cancel(); 
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'en-US';
-            utter.rate = 0.8; 
+            utter.rate = 0.8; // 大班句子較長，速度放慢至 0.8 最剛好
             window.speechSynthesis.speak(utter);
         }
 
-        // 2. 錄音與重播核心控制
+        // 2. 跨平台錄音控制核心 (完美相容 Android 系統與 iOS 系統底層音訊格式)
         async function handleMicClick(key) {
             const micBtn = document.getElementById(`mic_${key}`);
 
-            // 狀態 A：已經錄好音，點擊播放孩子自己的聲音
+            // 狀態 A：如果此按鈕已經有錄好的音訊，點擊直接播放孩子的聲音
             if (micBtn.classList.contains('has-audio') && currentRecordingKey !== key) {
                 if (recordedAudios[key]) {
                     const audio = new Audio(recordedAudios[key]);
                     audio.play();
                 }
+                // 貼心互動提示：詢問是否要洗掉重錄
                 setTimeout(() => {
                     if(confirm("想要清除這段聲音，重新錄製一次嗎？")) {
                         micBtn.classList.remove('has-audio');
                         micBtn.innerText = '🎤';
                     }
-                }, 1000);
+                }, 800);
                 return;
             }
 
-            // 狀態 B：開始錄音
+            // 狀態 B：如果目前沒有在錄音，點擊即啟動錄音
             if (!mediaRecorder || mediaRecorder.state === 'inactive') {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: { echoCancellation: true, noiseSuppression: true } 
                     });
 
+                    // 關鍵相容性設定：自動適配 iOS 的 mp4 與 Android 的 webm
                     let options = {};
                     if (MediaRecorder.isTypeSupported('audio/webm')) {
                         options = { mimeType: 'audio/webm' }; 
@@ -328,19 +345,20 @@ HTML
                         micBtn.classList.add('has-audio');
                         micBtn.innerText = '👂';
                         
+                        // 釋放手機麥克風硬體控制權，不讓流佔用
                         stream.getTracks().forEach(track => track.stop());
                     };
 
                     mediaRecorder.start();
                     micBtn.classList.add('recording');
-                    micBtn.innerText = '⏹️'; 
+                    micBtn.innerText = '⏹️'; // 錄音時圖標變更為停止紐
 
                 } catch (err) {
-                    alert('無法開啟麥克風，請檢查手機或瀏覽器的安全權限設定！');
+                    alert('無法開啟麥克風！請確認在手機上給予了網頁麥克風存取權限。');
                     console.error(err);
                 }
             } 
-            // 狀態 C：正在錄音中，點擊停止
+            // 狀態 C：如果正在錄音，再點一次同個按鈕就結束錄音
             else if (mediaRecorder.state === 'recording' && currentRecordingKey === key) {
                 mediaRecorder.stop();
             }
