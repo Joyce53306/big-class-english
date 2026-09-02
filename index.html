@@ -1,15 +1,25 @@
-HTML
+<!--
+  大班英語口說挑戰 (Big Class English Speaking Challenge)
+  © Joyce53306
+  Unauthorized copying or redistribution without credit is not permitted.
+  Build signature: JOYCE53306-BCE-v1
+-->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <link rel="manifest" href="manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Joyce53306">
+    <meta name="copyright" content="© Joyce53306">
     <title>大班英語口說挑戰</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* 網頁背景完全複製圖片 327717_2.jpg 的淺灰綠色調 */
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Andika', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: #edf1f2; 
             margin: 0; 
             padding: 10px 0 40px 0; 
@@ -148,18 +158,108 @@ HTML
             70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(229, 57, 53, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
         }
+
+        /* invisible watermark — present in the DOM, not visible on screen */
+        .wm-sig{
+            position:absolute;
+            width:1px; height:1px;
+            padding:0; margin:-1px;
+            overflow:hidden;
+            clip:rect(0,0,0,0);
+            white-space:nowrap;
+            border:0;
+        }
+
+        /* Font-loading gate: hides content until Andika is actually ready,
+           so iOS/Android never briefly flash a fallback font's double-story a/g */
+        #fontGate{
+            position:fixed;
+            inset:0;
+            background:#edf1f2;
+            z-index:999;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-family:'Andika', sans-serif;
+            font-size:16px;
+            color:#26a69a;
+            font-weight:bold;
+        }
+        #fontGate.hidden{ display:none; }
+        #appRoot{ visibility:hidden; }
+        #appRoot.ready{ visibility:visible; }
+
+        /* Friendly banner shown when the browser can't record audio at all
+           (most common cause: opening the page inside an in-app browser
+           like LINE on iOS, which blocks microphone access) */
+        #micUnsupportedNotice{
+            display:none;
+            width: 90%;
+            max-width: 550px;
+            background:#fff3cd;
+            border:2px solid #ffc107;
+            color:#7a5b00;
+            border-radius:16px;
+            padding:14px 18px;
+            margin-bottom:15px;
+            font-size:14px;
+            line-height:1.6;
+            text-align:center;
+        }
     </style>
 </head>
 <body>
+
+<div id="fontGate">Loading… 讀取中</div>
+<span class="wm-sig" aria-hidden="true">© Joyce53306</span>
+
+<div id="appRoot">
 
     <div class="header">
         <h1>☀️ 英語口說挑戰</h1>
         <div class="navbar" id="navbar"></div>
     </div>
 
+    <div id="micUnsupportedNotice">
+        ⚠️ 這個瀏覽器目前無法使用錄音功能。如果你是從 LINE 或其他 App 裡面打開這個網頁，
+        請改用手機內建的 <strong>Safari</strong>（iPhone）或 <strong>Chrome</strong>（Android）瀏覽器打開，
+        錄音功能才能正常運作。
+    </div>
+
     <div class="content-area" id="content-area"></div>
 
+</div><!-- /#appRoot -->
+
     <script>
+        // watermark / build signature (do not remove)
+        const BUILD_SIGNATURE = '© Joyce53306';
+        document.documentElement.setAttribute('data-build', BUILD_SIGNATURE);
+        console.log('%c' + BUILD_SIGNATURE, 'color:#26a69a;font-weight:bold;');
+
+        // Font gate: wait for Andika to actually be ready before showing any
+        // text, so iOS/Android never briefly render a/g/l/q/s in a fallback
+        // font's shape. Falls back to a 2.5s timeout if the Font Loading API
+        // is unavailable (older WebViews) so the app never gets stuck.
+        (function(){
+            const fontGate = document.getElementById('fontGate');
+            const appRoot = document.getElementById('appRoot');
+            function revealApp(){
+                fontGate.classList.add('hidden');
+                appRoot.classList.add('ready');
+            }
+            if (document.fonts && document.fonts.load){
+                Promise.race([
+                    Promise.all([
+                        document.fonts.load('700 20px Andika'),
+                        document.fonts.load('400 20px Andika')
+                    ]),
+                    new Promise(resolve => setTimeout(resolve, 2500))
+                ]).then(revealApp).catch(revealApp);
+            } else {
+                setTimeout(revealApp, 400);
+            }
+        })();
+
         // 大班完美修正版 1-10 課資料庫
         const curriculum = {
             "L1 職業": [
@@ -231,6 +331,17 @@ HTML
         let currentRecordingKey = null; 
         let recordedAudios = {}; 
 
+        // 偵測這個瀏覽器是否支援錄音（常見的「不能錄音」原因：
+        // 用 LINE 內建瀏覽器或其他 App 內嵌瀏覽器打開，
+        // iOS 上這類內嵌瀏覽器常常會擋掉麥克風權限）
+        const micSupported = !!(navigator.mediaDevices &&
+            navigator.mediaDevices.getUserMedia &&
+            window.MediaRecorder);
+        if (!micSupported){
+            const notice = document.getElementById('micUnsupportedNotice');
+            if (notice) notice.style.display = 'block';
+        }
+
         // 生成頂部標籤列
         const navbar = document.getElementById('navbar');
         Object.keys(curriculum).forEach((lesson, index) => {
@@ -296,13 +407,23 @@ HTML
 
         // 2. 跨平台錄音控制核心 (完美相容 Android 系統與 iOS 系統底層音訊格式)
         async function handleMicClick(key) {
+            if (!micSupported){
+                alert('這個瀏覽器不支援錄音功能。如果你是從 LINE 打開這個網頁，請改用手機內建的 Safari 或 Chrome 瀏覽器開啟。');
+                return;
+            }
+
             const micBtn = document.getElementById(`mic_${key}`);
 
             // 狀態 A：如果此按鈕已經有錄好的音訊，點擊直接播放孩子的聲音
             if (micBtn.classList.contains('has-audio') && currentRecordingKey !== key) {
                 if (recordedAudios[key]) {
                     const audio = new Audio(recordedAudios[key]);
-                    audio.play();
+                    // iOS Safari 有時會拒絕播放（自動播放政策），
+                    // 這裡補上錯誤處理，避免整個功能沒反應。
+                    audio.play().catch(err => {
+                        console.error('播放失敗:', err);
+                        alert('播放失敗，請再點一次麥克風按鈕試試看。');
+                    });
                 }
                 // 貼心互動提示：詢問是否要洗掉重錄
                 setTimeout(() => {
@@ -338,12 +459,28 @@ HTML
                     };
 
                     mediaRecorder.onstop = () => {
+                        // iOS Safari 偶爾在錄音極短（例如手滑誤觸）時
+                        // 會產生空白或損毀的音檔，這裡做基本防呆。
+                        if (audioChunks.length === 0 || audioChunks.every(c => c.size === 0)) {
+                            micBtn.classList.remove('recording');
+                            micBtn.innerText = '🎤';
+                            currentRecordingKey = null;
+                            stream.getTracks().forEach(track => track.stop());
+                            alert('錄音時間太短或沒有收到聲音，請再試一次。');
+                            return;
+                        }
+
                         const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                         recordedAudios[key] = URL.createObjectURL(audioBlob);
                         
                         micBtn.classList.remove('recording');
                         micBtn.classList.add('has-audio');
                         micBtn.innerText = '👂';
+
+                        // 修正：錄音結束後要清空目前錄音中的按鈕記號，
+                        // 不然馬上再點同一顆麥克風鈕會被誤判成「要重新錄音」，
+                        // 而不是「播放剛剛錄好的內容」。
+                        currentRecordingKey = null;
                         
                         // 釋放手機麥克風硬體控制權，不讓流佔用
                         stream.getTracks().forEach(track => track.stop());
@@ -354,8 +491,14 @@ HTML
                     micBtn.innerText = '⏹️'; // 錄音時圖標變更為停止紐
 
                 } catch (err) {
-                    alert('無法開啟麥克風！請確認在手機上給予了網頁麥克風存取權限。');
                     console.error(err);
+                    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+                        alert('沒有麥克風權限。請到手機的「設定」裡，找到瀏覽器（Safari 或 Chrome），開啟麥克風權限後再試一次。');
+                    } else if (err && err.name === 'NotFoundError') {
+                        alert('找不到麥克風裝置，請確認手機麥克風正常。');
+                    } else {
+                        alert('無法開啟麥克風！如果你是從 LINE 打開這個網頁，請改用手機內建的 Safari 或 Chrome 瀏覽器開啟再試一次。');
+                    }
                 }
             } 
             // 狀態 C：如果正在錄音，再點一次同個按鈕就結束錄音
