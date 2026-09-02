@@ -153,6 +153,21 @@
             background-color: #4db6ac; 
         }
 
+        /* 小的「重錄」按鈕 — 只在錄好音之後才出現，跟播放動作分開，
+           避免自動彈出的確認視窗打斷播放 */
+        .btn-reset {
+            width: 32px;
+            height: 32px;
+            font-size: 15px;
+            background-color: #eeeeee;
+            color: #757575;
+            align-self: flex-end;
+            margin-top: -14px;
+            margin-left: -14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            border: 2px solid white;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.4); }
             70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(229, 57, 53, 0); }
@@ -378,6 +393,7 @@
                     <div class="btn-group">
                         <button class="circle-btn btn-speak">🔊</button>
                         <button class="circle-btn btn-mic" id="mic_${uniqueKey}">🎤</button>
+                        <button class="circle-btn btn-reset" id="reset_${uniqueKey}" style="display:none;">🔁</button>
                     </div>
                 `;
                 
@@ -385,13 +401,17 @@
                 card.querySelector('.btn-speak').onclick = () => playTTS(sentence);
                 // 綁定開關麥克風
                 card.querySelector('.btn-mic').onclick = () => handleMicClick(uniqueKey);
+                // 綁定重錄（跟播放分開，避免播放時被彈窗打斷）
+                card.querySelector('.btn-reset').onclick = () => handleResetClick(uniqueKey);
                 
                 container.appendChild(card);
                 
                 if (recordedAudios[uniqueKey]) {
                     const micBtn = document.getElementById(`mic_${uniqueKey}`);
+                    const resetBtn = document.getElementById(`reset_${uniqueKey}`);
                     micBtn.classList.add('has-audio');
                     micBtn.innerText = '👂';
+                    resetBtn.style.display = 'flex';
                 }
             });
         }
@@ -425,13 +445,8 @@
                         alert('播放失敗，請再點一次麥克風按鈕試試看。');
                     });
                 }
-                // 貼心互動提示：詢問是否要洗掉重錄
-                setTimeout(() => {
-                    if(confirm("想要清除這段聲音，重新錄製一次嗎？")) {
-                        micBtn.classList.remove('has-audio');
-                        micBtn.innerText = '🎤';
-                    }
-                }, 800);
+                // 重錄請改按旁邊的 🔁 按鈕（跟播放分開，
+                // 避免自動彈出的確認視窗打斷正在播放的聲音）
                 return;
             }
 
@@ -476,6 +491,8 @@
                         micBtn.classList.remove('recording');
                         micBtn.classList.add('has-audio');
                         micBtn.innerText = '👂';
+                        const resetBtn = document.getElementById(`reset_${key}`);
+                        if (resetBtn) resetBtn.style.display = 'flex';
 
                         // 修正：錄音結束後要清空目前錄音中的按鈕記號，
                         // 不然馬上再點同一顆麥克風鈕會被誤判成「要重新錄音」，
@@ -484,6 +501,12 @@
                         
                         // 釋放手機麥克風硬體控制權，不讓流佔用
                         stream.getTracks().forEach(track => track.stop());
+
+                        // 錄完馬上自動播放一次，孩子不用再多按一次耳朵
+                        const playback = new Audio(recordedAudios[key]);
+                        playback.play().catch(err => {
+                            console.error('自動播放失敗:', err);
+                        });
                     };
 
                     mediaRecorder.start();
@@ -504,6 +527,18 @@
             // 狀態 C：如果正在錄音，再點一次同個按鈕就結束錄音
             else if (mediaRecorder.state === 'recording' && currentRecordingKey === key) {
                 mediaRecorder.stop();
+            }
+        }
+
+        // 3. 重錄（跟播放分開的獨立按鈕，避免自動彈窗打斷播放中的聲音）
+        function handleResetClick(key) {
+            if (confirm("想要清除這段聲音，重新錄製一次嗎？")) {
+                const micBtn = document.getElementById(`mic_${key}`);
+                const resetBtn = document.getElementById(`reset_${key}`);
+                micBtn.classList.remove('has-audio');
+                micBtn.innerText = '🎤';
+                if (resetBtn) resetBtn.style.display = 'none';
+                delete recordedAudios[key];
             }
         }
 
